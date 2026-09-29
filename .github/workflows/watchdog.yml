@@ -1,0 +1,30 @@
+name: VPS External Watchdog
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Dijalankan setiap 5 menit
+  workflow_dispatch: # Memungkinkan Anda menjalankannya manual untuk tes
+
+jobs:
+  ping-vps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cek Koneksi VPS
+        id: ping
+        run: |
+          # Mencoba mengakses endpoint PocketBase di VPS Anda
+          if curl -s --max-time 10 "${{ secrets.VPS_IP }}" > /dev/null; then
+            echo "status=up" >> $GITHUB_OUTPUT
+            echo "✅ VPS G-1st Online"
+          else
+            echo "status=down" >> $GITHUB_OUTPUT
+            echo "❌ VPS G-1st Tidak Merespon!"
+          fi
+
+      - name: Kirim Alert Telegram jika Down
+        if: steps.ping.outputs.status == 'down'
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="💀 <b>VPS DOWN!</b> 🚨%0AVPS G-1st tidak merespon ping.%0AKemungkinan Crash, Shutdown, atau Habis Kuota!" \
+          -d parse_mode="HTML"
