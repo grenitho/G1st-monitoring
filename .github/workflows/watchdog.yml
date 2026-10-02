@@ -2,7 +2,7 @@ name: VPS External Watchdog
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Dijalankan setiap 5 menit
+    - cron: '*/59 * * * *' # Dijalankan setiap 45 menit
   workflow_dispatch: # Memungkinkan Anda menjalankannya manual untuk tes
 
 jobs:
